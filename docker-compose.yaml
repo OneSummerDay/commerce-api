@@ -1,0 +1,29 @@
+services:
+  app:
+    build: .
+    container_name: commerce_api_app
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - db
+    env_file:
+      - .env
+
+  db:
+    image: postgres:16-alpine
+    container_name: commerce_api_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: commerce_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
