@@ -182,3 +182,35 @@ export const updateProduct = async (req: Request, res: Response) => {
     product: updatedProduct,
   });
 };
+
+export const deleteProduct = async (req: Request, res: Response) => {
+  const productId = Number(req.params.id);
+
+  if (Number.isNaN(productId)) {
+    return res.status(400).json({
+      message: 'Product id must be a number',
+    });
+  }
+
+  const existingProduct = await prisma.product.findUnique({
+    where: {
+      id: productId,
+    },
+  });
+
+  if (!existingProduct) {
+    return res.status(404).json({
+      message: 'Product not found',
+    });
+  }
+
+  await prisma.product.delete({
+    where: {
+      id: productId,
+    },
+  });
+
+  return res.status(200).json({
+    message: 'Product deleted successfully',
+  });
+};
