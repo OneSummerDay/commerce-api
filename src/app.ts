@@ -1,6 +1,7 @@
 import express from 'express';
 import authRoutes from './routes/auth.routes';
 import categoryRoutes from './routes/category.routes';
+import productRoutes from './routes/product.routes';
 
 const app = express();
 
@@ -12,5 +13,6 @@ app.get('/', (req, res) => {
 
 app.use('/auth', authRoutes);
 app.use('/categories', categoryRoutes);
+app.use('/products', productRoutes);
 
 export default app;
