@@ -1,19 +1,56 @@
 import { Response, Request } from 'express';
 import prisma from '../lib/prisma';
 
-export const getProducts = async (res: Response, req: Request) => {
-    const products = await prisma.product.findMany({
-        include: {
-            category: true,
-        },
-        orderBy: {
-            name: 'desc',
-        },
-    });
+export const getProducts = async (req: Request, res: Response) => {
+  const categoryId = req.query.categoryId
+    ? Number(req.query.categoryId)
+    : undefined;
 
-    return res.status(200).json({
-        products,
+  const minPrice = req.query.minPrice
+    ? Number(req.query.minPrice)
+    : undefined;
+
+  const maxPrice = req.query.maxPrice
+    ? Number(req.query.maxPrice)
+    : undefined;
+
+  if (categoryId !== undefined && Number.isNaN(categoryId)) {
+    return res.status(400).json({
+      message: 'categoryId must be a number',
     });
+  }
+
+  if (minPrice !== undefined && Number.isNaN(minPrice)) {
+    return res.status(400).json({
+      message: 'minPrice must be a number',
+    });
+  }
+
+  if (maxPrice !== undefined && Number.isNaN(maxPrice)) {
+    return res.status(400).json({
+      message: 'maxPrice must be a number',
+    });
+  }
+
+  const products = await prisma.product.findMany({
+    where: {
+      categoryId,
+      price: {
+        gte: minPrice,
+        lte: maxPrice,
+      },
+    },
+    include: {
+      category: true,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+
+  return res.status(200).json({
+    products,
+  });
 };
 
 export const createProduct = async (req: Request, res: Response) => {
