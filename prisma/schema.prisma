@@ -12,6 +12,7 @@ model User {
   email     String   @unique
   password  String
   createdAt DateTime @default(now())
+  comments  Comment[]
 
   @@map("users")
 }
@@ -32,6 +33,19 @@ model Product {
   categoryId  Int
   category    Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   createdAt   DateTime  @default(now())
+  comments    Comment[]
 
   @@map("products")
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  text      String
+  userId    Int
+  productId Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@map("comments")
 }
