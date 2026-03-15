@@ -83,3 +83,31 @@ export const createPurchase = async (req: Request, res: Response) => {
     purchase,
   });
 };
+
+export const getMyPurchases = async (req: Request, res: Response) => {
+  if (!req.user) {
+    return res.status(401).json({
+      message: 'Unauthorized',
+    });
+  }
+
+  const purchases = await prisma.purchase.findMany({
+    where: {
+      userId: req.user.userId,
+    },
+    include: {
+      items: {
+        include: {
+          product: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+
+  return res.status(200).json({
+    purchases,
+  });
+};
