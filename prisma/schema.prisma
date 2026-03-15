@@ -13,6 +13,7 @@ model User {
   password  String
   createdAt DateTime @default(now())
   comments  Comment[]
+  purchases Purchase[]
 
   @@map("users")
 }
@@ -34,6 +35,7 @@ model Product {
   category    Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   createdAt   DateTime  @default(now())
   comments    Comment[]
+  purchaseItems PurchaseItem[]
 
   @@map("products")
 }
@@ -48,4 +50,28 @@ model Comment {
   createdAt DateTime @default(now())
 
   @@map("comments")
+}
+
+model Purchase {
+  id          Int            @id @default(autoincrement())
+  userId      Int
+  totalAmount Float
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items       PurchaseItem[]
+  createdAt   DateTime       @default(now())
+
+  @@map("purchases")
+}
+
+model PurchaseItem {
+  id         Int      @id @default(autoincrement())
+  purchaseId Int
+  productId  Int
+  quantity   Int
+  price      Float
+  subtotal   Float
+  purchase   Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("purchase_items")
 }
