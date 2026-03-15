@@ -18,6 +18,14 @@ export const getProducts = async (req: Request, res: Response) => {
     ? req.query.sort 
     : undefined;
 
+  const page = req.query.page 
+    ? Number(req.query.page) 
+    : 1;
+
+  const limit = req.query.limit 
+    ? Number(req.query.limit) 
+    : 10;
+
   if (categoryId !== undefined && Number.isNaN(categoryId)) {
     return res.status(400).json({
       message: 'categoryId must be a number',
@@ -39,8 +47,32 @@ export const getProducts = async (req: Request, res: Response) => {
   if (sort !== undefined && sort !== 'popular') {
   return res.status(400).json({
     message: 'sort must be "popular"',
-  });
- }
+    });
+  }
+
+ if (Number.isNaN(page) || page < 1) {
+  return res.status(400).json({
+    message: 'page must be a positive number',
+    });
+  }
+
+  if (Number.isNaN(limit) || limit < 1) {
+  return res.status(400).json({
+    message: 'limit must be a positive number',
+    });
+  }
+
+  const skip = (page - 1) * limit;
+
+  const total = await prisma.product.count({
+  where: {
+    categoryId,
+    price: {
+      gte: minPrice,
+      lte: maxPrice,
+    },
+  },
+});
 
   const products = await prisma.product.findMany({
     where: {
@@ -54,18 +86,27 @@ export const getProducts = async (req: Request, res: Response) => {
       category: true,
     },
     orderBy:
-  sort === 'popular'
-    ? {
-        comments: {
-          _count: 'desc',
+      sort === 'popular'
+        ? {
+          comments: {
+            _count: 'desc',
+          },
+        }
+        : {
+          createdAt: 'desc',
         },
-      }
-    : {
-        createdAt: 'desc',
-      },
+
+    skip: skip,
+    take: limit, 
   });
 
   return res.status(200).json({
+    meta: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
     products,
   });
 };
